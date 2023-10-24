@@ -1,0 +1,4 @@
+group_name: 'your_group_name'
+user_name: 'your_user_name'
+user_password: 'your_user_password'  # Ensure you use a strong password; you can also omit this line if you don't want to set a password for the user.
+

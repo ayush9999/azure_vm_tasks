@@ -1,0 +1,40 @@
+---
+- name: Change Azure VM Size
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars/instance_vars.yml
+
+  tasks:
+    - name: Ensure we are authenticated with Azure
+      command: az account show
+      register: az_login_check
+      ignore_errors: true
+
+    - name: Fail if not logged in to Azure
+      fail:
+        msg: "You are not logged into Azure. Please run 'az login' before executing this playbook."
+      when: az_login_check.rc != 0
+
+    - name: Stop the Azure VM before resizing
+      command: az vm stop --resource-group {{ resource_group }} --name {{ vm_name }}
+      register: vm_stop
+      until: vm_stop.rc == 0
+      retries: 5
+      delay: 10
+
+    - name: Resize the Azure VM
+      command: az vm resize --resource-group {{ resource_group }} --name {{ vm_name }} --size {{ new_vm_size }}
+      register: vm_resize
+      until: vm_resize.rc == 0
+      retries: 5
+      delay: 10
+
+    - name: Start the Azure VM after resizing
+      command: az vm start --resource-group {{ resource_group }} --name {{ vm_name }}
+      register: vm_start
+      until: vm_start.rc == 0
+      retries: 5
+      delay: 10
+
+

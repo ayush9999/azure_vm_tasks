@@ -1,0 +1,23 @@
+---
+- name: Modify Azure NSG Rules
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars/nsg_vars.yml
+
+  tasks:
+    - name: Ensure we are authenticated with Azure
+      command: az account show
+      register: az_login_check
+      ignore_errors: true
+
+    - name: Fail if not logged in to Azure
+      fail:
+        msg: "You are not logged into Azure. Please run 'az login' before executing this playbook."
+      when: az_login_check.rc != 0
+
+    - name: Add or modify rules to the NSG
+      command: "az network nsg rule create --resource-group {{ resource_group }} --nsg-name {{ nsg_name }} --name {{ item.name }} --protocol {{ item.protocol }} --direction {{ item.direction }} --priority {{ item.priority }} --source-address-prefix '{{ item.source_address_prefix }}' --source-port-range '{{ item.source_port_range }}' --destination-address-prefix '{{ item.destination_address_prefix }}' --destination-port-range '{{ item.destination_port_range }}' --access {{ item.access }}"
+      register: nsg_rule
+      loop: "{{ nsg_rules }}"
+

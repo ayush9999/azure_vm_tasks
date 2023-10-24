@@ -1,0 +1,5 @@
+# Variables for changing Azure VM Size
+resource_group: 'your_resource_group_name'
+vm_name: 'your_vm_name'
+new_vm_size: 'Standard_DS2_v2'  # Example VM size, change as needed
+

@@ -1,0 +1,15 @@
+# Variables for modifying Azure NSG rules
+resource_group: 'your_resource_group_name'
+nsg_name: 'your_nsg_name'
+nsg_rules:
+  - name: 'Allow_SSH'
+    protocol: 'Tcp'
+    direction: 'Inbound'
+    priority: 1001
+    source_address_prefix: '*'
+    source_port_range: '*'
+    destination_address_prefix: '*'
+    destination_port_range: '22'
+    access: 'Allow'
+  # Add more rules in the same structure as above to expand
+

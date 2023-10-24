@@ -1,0 +1,46 @@
+---
+- name: Add a User with Read-Only Access to an Instance
+  hosts: target_instance
+  become: yes
+  vars_files:
+    - vars/user_and_group_vars.yml
+
+  tasks:
+    - name: Ensure group exists
+      group:
+        name: "{{ group_name }}"
+        state: present
+
+    - name: Ensure user exists and is a member of the group
+      user:
+        name: "{{ user_name }}"
+        group: "{{ group_name }}"
+        shell: /bin/rbash  # Restrict to a restricted bash shell
+        createhome: yes
+        password: "{{ user_password | password_hash('sha512') }}"
+        state: present
+
+    - name: Restrict user's home directory permissions
+      file:
+        path: "/home/{{ user_name }}"
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        mode: '0550'  # Read and execute permissions for owner and group, no permissions for others
+
+    - name: Set user profile to prevent modification
+      copy:
+        dest: "/home/{{ user_name }}/.profile"
+        content: |
+          # This is a restricted account
+          PATH="$HOME/bin"
+          export PATH
+        mode: '0440'  # Read-only for owner and group
+
+    - name: Ensure restricted bin directory exists for user
+      file:
+        path: "/home/{{ user_name }}/bin"
+        state: directory
+        owner: "{{ user_name }}"
+        group: "{{ group_name }}"
+        mode: '0550'
+
